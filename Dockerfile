@@ -1,4 +1,5 @@
 FROM alpine:3.3
+MAINTAINER Steven Hopkins <srhopkins@gmail.com>
 
 RUN apk add --update python cairo
 
