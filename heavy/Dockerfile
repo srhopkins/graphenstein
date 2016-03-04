@@ -17,3 +17,6 @@ RUN mkdir -p /srv/graphite
 ADD carbon-c-relay /tmp/carbon-c-relay
 RUN cd /tmp/carbon-c-relay; make && mv relay /opt/carbon-c-relay && \
     ln -s /opt/carbon-c-relay /usr/bin/carbon-c-relay
+
+ADD https://releases.hashicorp.com/consul-template/0.13.0/consul-template_0.13.0_linux_amd64.zip c.zip
+RUN unzip -d /usr/bin c.zip
