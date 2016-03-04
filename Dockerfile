@@ -3,12 +3,14 @@ MAINTAINER Steven Hopkins <srhopkins@gmail.com>
 
 RUN apk add --update python cairo supervisor
 
-ADD slim/slim.tar.gz /
-
-ADD https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip consul.zip
-ADD https://releases.hashicorp.com/consul-template/0.13.0/consul-template_0.13.0_linux_amd64.zip consul_template.zip
-RUN unzip -d /usr/bin consul.zip
-RUN unzip -d /usr/bin consul_template.zip
+RUN apk add --update build-base python-dev py-pip cairo-dev libffi-dev git && \
+    pip install cffi gunicorn graphite-api[sentry,cyanite] carbon whisper && \
+    curl https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip -o consul.zip && \
+    curl https://releases.hashicorp.com/consul-template/0.13.0/consul-template_0.13.0_linux_amd64.zip -o consult.zip && \
+    unzip -d /usr/bin consul.zip && unzip -d /usr/bin consult.zip && rm consul*.zip && \
+    git clone https://github.com/grobian/carbon-c-relay.git && cd carbon-c-relay && make && \
+    mv relay /usr/bin/carbon-c-relay && cd .. && rm -rf carbon-c-relay && \
+    apk del build-base python-dev py-pip cairo-dev libffi-dev git
 
 ADD supervisord.conf /etc/supervisord.conf
 ADD carbon-c-relay.conf /etc/carbon-c-relay.conf
