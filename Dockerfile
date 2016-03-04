@@ -1,28 +1,23 @@
 FROM alpine:3.3
-MAINTAINER Steven Hopkins <srhopkins@gmail.com>
 
-RUN apk add --update python cairo
+RUN apk add --update build-base
+RUN apk add --update python-dev
+RUN apk add --update py-pip
+RUN apk add --update cairo-dev
+RUN apk add --update libffi-dev
+RUN apk add --update git
 
-RUN mkdir -p /srv/graphite
+RUN pip install --upgrade pip
+RUN pip install cffi
+RUN pip install gunicorn graphite-api[sentry,cyanite]
+RUN pip install carbon
+RUN pip install whisper
 
-RUN rm -rf /usr/lib/python2.7
+WORKDIR /opt
+RUN git clone https://github.com/grobian/carbon-c-relay.git && cd carbon-c-relay && make
+RUN mv /opt/carbon-c-relay/relay /usr/bin/carbon-c-relay
 
-ADD slim/python2.7 /usr/lib/python2.7/
-ADD slim/whisper* /usr/bin/
-ADD slim/graphite /opt/graphite
-ADD slim/gunicorn /usr/bin/gunicorn
-ADD slim/carbon-c-relay /usr/bin/carbon-c-relay
-ADD carbon-c-relay.conf /etc/carbon-c-relay.conf
-ADD https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip consul.zip
-ADD https://releases.hashicorp.com/consul-template/0.13.0/consul-template_0.13.0_linux_amd64.zip consul_template.zip
-RUN unzip -d /usr/bin consul.zip
-RUN unzip -d /usr/bin consul_template.zip
-
-RUN mv /opt/graphite/conf/carbon.conf.example /opt/graphite/conf/carbon.conf
-RUN mv /opt/graphite/conf/storage-schemas.conf.example /opt/graphite/conf/storage-schemas.conf
-RUN sed -i 's/2003/2103/' /opt/graphite/conf/carbon.conf
-
-RUN apk add --update supervisor
-ADD supervisord.conf /etc/supervisord.conf
-
-CMD ["/usr/bin/supervisord"]
+RUN find /usr/bin -name gunicorn -o -name carbon-c-relay -o -name 'whisper*' >> slim_files
+RUN find /usr/lib/python2.7/ >> slim_files
+RUN find /opt/graphite/ >> slim_files
+RUN tar -czf slim.tar.gz -T slim_files

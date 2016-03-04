@@ -1,0 +1,5 @@
+build:
+  build: heavy
+  volumes:
+    - ./slim:/opt/slim
+  command: cp /opt/slim.tar.gz /opt/slim/slim.tar.gz
